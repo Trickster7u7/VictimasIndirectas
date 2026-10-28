@@ -1,0 +1,5 @@
+/* Estilos globales mínimos: el diseño reside en theme/temaAplicacion.ts y config/diseno.config.ts. */
+html { scroll-behavior: smooth; }
+body { min-width: 320px; }
+#root { min-height: 100vh; }
+* { box-sizing: border-box; }

@@ -1,0 +1,60 @@
+:root {
+  /* Identidad Llave MX / Gobierno */
+  --color-guinda-600: #611232;
+  --color-guinda-landing: #781839;
+  --color-guinda-hover: #4d0e28;
+  --color-guinda-oscuro: #4a0c26;
+  --color-dorado-500: #a57f2c;
+  --color-verde-gobierno: #002f2a;
+  --color-verde-gobierno-claro: #1e5b4f;
+  --color-guinda-gobierno-claro: #9b2247;
+  --color-dorado-claro: #e6d194;
+  --color-gris-gobierno: #98989a;
+  --color-blanco: #ffffff;
+
+  /* Colores semánticos */
+  --color-primario: var(--color-guinda-600);
+  --color-primario-hover: var(--color-guinda-hover);
+  --color-secundario: var(--color-dorado-500);
+  --color-fondo: #f9f9f9;
+  --color-superficie: #ffffff;
+  --color-texto: #161a1d;
+  --color-texto-secundario: #434343;
+  --color-texto-suave: #767676;
+  --color-borde: #dddddd;
+  --color-borde-fuerte: #aaaaaa;
+  --color-error: #b3261e;
+
+  /* Tipografía */
+  --fuente-principal: "Noto Sans", Arial, Helvetica, sans-serif;
+  --fuente-titulos: "Noto Sans", Arial, Helvetica, sans-serif;
+  --texto-xs: 0.75rem;
+  --texto-sm: 0.8125rem;
+  --texto-lg: 1.125rem;
+  --texto-base: 1rem;
+  --texto-xl: 1.5rem;
+  --texto-3xl: 2.25rem;
+
+  /* Espaciado */
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 24px;
+  --espacio-6: 32px;
+  --espacio-7: 40px;
+  --espacio-8: 48px;
+
+  /* Bordes y sombras */
+  --radio-pequeno: 6px;
+  --radio-medio: 8px;
+  --radio-grande: 12px;
+  --sombra-tarjeta: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --sombra-suave: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+  /* Layout */
+  --ancho-maximo-contenido: 1440px;
+  --ancho-tarjeta-login: 380px;
+  --alto-control: 40px;
+  --alto-logo-llave: 56px;
+  --alto-encabezado: 82px;
+}

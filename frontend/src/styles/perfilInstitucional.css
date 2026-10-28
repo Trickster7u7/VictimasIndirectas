@@ -1,0 +1,239 @@
+.perfil-institucional {
+  width: min(100%, 1100px);
+  margin-inline: auto;
+}
+
+.perfil-institucional__encabezado {
+  margin-bottom: var(--espacio-6);
+}
+
+.perfil-institucional__encabezado h1 {
+  margin: 6px 0 8px;
+  font-size: 30px;
+}
+
+.perfil-institucional__encabezado p {
+  max-width: 720px;
+  margin: 0;
+  color: var(--color-texto-secundario);
+}
+
+.etiqueta-seccion {
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+
+.perfil-institucional__usuario {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-5);
+
+  margin-bottom: var(--espacio-5);
+  padding: var(--espacio-5);
+
+  border: 1px solid var(--color-borde);
+  border-left: 5px solid var(--color-primario);
+  border-radius: var(--radio-medio);
+
+  background: var(--color-superficie);
+}
+
+.perfil-institucional__usuario > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.perfil-institucional__etiqueta {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+
+.estado-usuario {
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background: #eeeeee;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.formulario-institucional {
+  padding: var(--espacio-6);
+
+  border-top: 5px solid var(--color-primario);
+  border-radius: var(--radio-medio);
+
+  background: var(--color-superficie);
+
+  box-shadow: var(--sombra-tarjeta);
+}
+
+
+.formulario-institucional__rejilla {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: var(--espacio-5);
+}
+
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+
+.campo-formulario--completo {
+  grid-column: 1 / -1;
+}
+
+
+.campo-formulario label {
+  color: var(--color-texto-secundario);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+.campo-formulario input {
+  width: 100%;
+  min-height: var(--alto-control);
+
+  padding: 10px 12px;
+
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+
+  background: var(--color-superficie);
+
+  color: var(--color-texto);
+
+  outline: none;
+}
+
+
+.campo-formulario input:focus {
+  border-color: var(--color-primario);
+
+  box-shadow:
+    0 0 0 3px rgba(97, 18, 50, 0.12);
+}
+
+
+.campo-formulario input:disabled {
+  background: #f3f3f3;
+  color: var(--color-texto-secundario);
+  cursor: not-allowed;
+}
+
+
+.formulario-institucional__acciones {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: var(--espacio-6);
+  padding-top: var(--espacio-5);
+
+  border-top: 1px solid var(--color-borde);
+}
+
+
+.boton-primario {
+  min-height: var(--alto-control);
+
+  padding: 10px 22px;
+
+  border: 1px solid var(--color-primario);
+  border-radius: var(--radio-pequeno);
+
+  background: var(--color-primario);
+  color: var(--color-blanco);
+
+  font-weight: 700;
+}
+
+
+.boton-primario:hover:not(:disabled) {
+  background: var(--color-primario-hover);
+}
+
+
+.boton-primario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+.mensaje-estado {
+  margin-bottom: var(--espacio-5);
+  padding: var(--espacio-4) var(--espacio-5);
+
+  border-radius: var(--radio-medio);
+}
+
+.mensaje-estado strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.mensaje-estado p {
+  margin: 0;
+}
+
+
+.mensaje-estado--pendiente {
+  border: 1px solid #d8bf78;
+  background: #fff8df;
+}
+
+
+.mensaje-estado--error {
+  border: 1px solid #e0a29d;
+  background: #fff1f0;
+  color: var(--color-error);
+}
+
+
+.mensaje-estado--correcto {
+  border: 1px solid #9bcbb6;
+  background: #eef8f2;
+  color: #245e43;
+}
+
+
+@media (max-width: 720px) {
+
+  .formulario-institucional__rejilla {
+    grid-template-columns: 1fr;
+  }
+
+  .campo-formulario--completo {
+    grid-column: auto;
+  }
+
+  .perfil-institucional__usuario {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .formulario-institucional {
+    padding: var(--espacio-5);
+  }
+
+  .boton-primario {
+    width: 100%;
+  }
+
+}
