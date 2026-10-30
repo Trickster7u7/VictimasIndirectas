@@ -1,6 +1,5 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from urllib.parse import urlsplit
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,6 +54,7 @@ aplicacion.include_router(router_descarga_registros)
 aplicacion.include_router(router_gestion_victimas, prefix="/api/registro-victimas")
 aplicacion.include_router(router_estadisticas_victimas)
 aplicacion.include_router(router_gestion_accesos)
+
 
 origenes_permitidos = [
     "https://dticap.dif.gob.mx",

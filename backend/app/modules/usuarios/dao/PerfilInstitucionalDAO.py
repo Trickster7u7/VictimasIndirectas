@@ -73,20 +73,26 @@ class PerfilInstitucionalDAO:
 
         return perfil
 
-@staticmethod
-async def obtener_por_usuario_id(
-    id_usuario: int,
-    usando_bd=None,
-) -> PerfilInstitucional | None:
-
-    consulta = PerfilInstitucional.filter(
-        usuario_id=id_usuario
-    )
-
-    if usando_bd is not None:
-        consulta = consulta.using_db(
-            usando_bd
+    @staticmethod
+    async def registrar_revision(
+        perfil: PerfilInstitucional,
+        usuario_validador: Usuario,
+        observaciones: str | None = None,
+        usando_bd=None,
+    ) -> PerfilInstitucional:
+        perfil.usuario_validador_id = usuario_validador.id
+        perfil.fecha_validacion = datetime.now(UTC)
+        perfil.observaciones_validacion = (
+            observaciones.strip() if observaciones and observaciones.strip() else None
         )
-
-    return await consulta.first()
+        await perfil.save(
+            using_db=usando_bd,
+            update_fields=[
+                "usuario_validador_id",
+                "fecha_validacion",
+                "observaciones_validacion",
+                "fecha_actualizacion",
+            ],
+        )
+        return perfil
 

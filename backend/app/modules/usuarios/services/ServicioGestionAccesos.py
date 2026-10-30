@@ -13,7 +13,9 @@ from app.modules.usuarios.models.catalogos.EstatusUsuarioModel import EstadoUsua
 class ServicioGestionAccesos:
     @staticmethod
     async def listar_roles():
-        return await Rol.all().order_by("nombre")
+        # Los roles retirados se conservan en la BD por trazabilidad,
+        # pero no deben ofrecerse para asignaciones nuevas.
+        return await Rol.filter(activo=True).order_by("nombre")
 
     @staticmethod
     async def listar_permisos():

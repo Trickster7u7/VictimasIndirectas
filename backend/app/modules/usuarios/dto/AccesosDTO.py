@@ -59,3 +59,39 @@ class GruposUsuarioDTO(BaseModel):
 class RolesGrupoDTO(BaseModel):
     id_grupo: int
     roles: list[RolDTO]
+
+
+class AprobarUsuarioDTO(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    observaciones: str | None = Field(default=None, max_length=1000)
+
+
+class UsuarioAprobadoDTO(BaseModel):
+    id_usuario: int
+    estado: str
+
+
+class UsuarioAdministracionDTO(BaseModel):
+    id: int
+    nombre: str
+    primer_apellido: str
+    segundo_apellido: str | None
+    correo: str | None
+    estado: str
+
+
+class PaginaUsuariosDTO(BaseModel):
+    usuarios: list[UsuarioAdministracionDTO]
+    total: int
+    pagina: int
+    limite: int
+
+
+class AsignarPermisosRolDTO(BaseModel):
+    ids_permisos: list[int] = Field(..., max_length=200)
+
+
+class PermisosRolDTO(BaseModel):
+    id_rol: int
+    ids_permisos: list[int]

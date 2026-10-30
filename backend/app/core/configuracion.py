@@ -24,12 +24,14 @@ class Configuracion(BaseSettings):
     secreto_sesion: str = ""
 
     # Configuración de la API SESNSP
-    sspc_api_url: str = "https://cni03.SESNSP.gob.mx/apiFeminicidios"
+    sspc_api_url: str = "https://cni03.sspc.gob.mx/apiFeminicidios"
     sspc_origen: str = ""
     sspc_usuario: str = ""
     sspc_password: str = ""
     sspc_sync_user_ids: str = ""
     sspc_sync_todos: bool = False
+    
+    rbac_proteger_rutas_existentes: bool = False
     model_config = SettingsConfigDict(
     env_file=".env",
     env_file_encoding="utf-8",

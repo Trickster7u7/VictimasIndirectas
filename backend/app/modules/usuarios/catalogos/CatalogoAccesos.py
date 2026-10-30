@@ -9,8 +9,11 @@ PERMISOS = {
     "grupos.consultar": ("Usuarios", "Consultar grupos y su configuración"),
     "grupos.gestionar": ("Usuarios", "Crear grupos y asignarles roles"),
     "registros.consultar": ("Registros", "Consultar registros de víctimas"),
+    "registros.detalle.consultar": ("Registros", "Consultar detalle completo de registros"),
     "registros.sincronizar": ("Registros", "Sincronizar registros externos"),
     "registros.exportar": ("Registros", "Exportar registros"),
+    "registros.resumen.consultar": ("Registros", "Consultar tabla agregada por periodo"),
+    "estadisticas.consultar": ("Estadísticas", "Consultar indicadores agregados"),
     "victimas.consultar": ("Víctimas", "Consultar información de víctimas"),
     "victimas.gestionar": ("Víctimas", "Gestionar información de víctimas"),
 }
@@ -20,21 +23,21 @@ ROLES = {
         "nombre": "Administrador",
         "permisos": tuple(PERMISOS),
     },
-    "VALIDADOR": {
-        "nombre": "Validador institucional",
+    "OPERADOR": {
+        "nombre": "Operador",
         "permisos": (
-            "usuarios.consultar", "usuarios.validar",
-            "registros.consultar", "victimas.consultar",
-        ),
-    },
-    "CAPTURISTA": {
-        "nombre": "Capturista",
-        "permisos": (
-            "registros.consultar", "victimas.consultar", "victimas.gestionar",
+            "registros.consultar", "registros.detalle.consultar",
+            "registros.exportar", "registros.sincronizar",
+            "registros.resumen.consultar",
+            "victimas.consultar", "victimas.gestionar",
+            "estadisticas.consultar",
         ),
     },
     "CONSULTA": {
         "nombre": "Consulta",
-        "permisos": ("registros.consultar", "victimas.consultar"),
+        "permisos": (
+            "estadisticas.consultar", "registros.resumen.consultar",
+            "registros.consultar", "victimas.consultar",
+        ),
     },
 }

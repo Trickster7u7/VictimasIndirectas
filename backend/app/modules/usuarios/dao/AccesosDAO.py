@@ -9,6 +9,14 @@ from app.modules.usuarios.models.UsuarioGrupoModel import UsuarioGrupo
 class AccesosDAO:
     @staticmethod
     async def obtener_codigos_permisos(id_usuario: int) -> set[str]:
+        # ADMINISTRADOR se asigna exclusivamente de forma directa y tiene
+        # todos los permisos registrados, incluidos los agregados a futuro.
+        es_administrador = await UsuarioRol.filter(
+            usuario_id=id_usuario, rol__codigo="ADMINISTRADOR", rol__activo=True
+        ).exists()
+        if es_administrador:
+            return set(await Permiso.all().values_list("codigo", flat=True))
+
         # Roles excepcionales asignados directamente a la cuenta.
         ids_directos = await UsuarioRol.filter(
             usuario_id=id_usuario, rol__activo=True

@@ -18,10 +18,12 @@ class ServicioValidacionUsuario:
         usuario_validador: Usuario,
         observaciones: str | None = None,
     ) -> Usuario:
-        usuario, perfil = await self._obtener_usuario_y_perfil(id_usuario)
-        self._validar_pendiente(usuario)
-
         async with in_transaction() as conexion:
+            usuario, perfil = await self._obtener_usuario_y_perfil(
+                id_usuario, usando_bd=conexion, bloquear=True
+            )
+            self._validar_pendiente(usuario)
+
             await self.dao_perfil.registrar_revision(
                 perfil=perfil,
                 usuario_validador=usuario_validador,
@@ -47,10 +49,12 @@ class ServicioValidacionUsuario:
         if not observaciones:
             raise ValueError("El motivo del rechazo es obligatorio.")
 
-        usuario, perfil = await self._obtener_usuario_y_perfil(id_usuario)
-        self._validar_pendiente(usuario)
-
         async with in_transaction() as conexion:
+            usuario, perfil = await self._obtener_usuario_y_perfil(
+                id_usuario, usando_bd=conexion, bloquear=True
+            )
+            self._validar_pendiente(usuario)
+
             await self.dao_perfil.registrar_revision(
                 perfil=perfil,
                 usuario_validador=usuario_validador,
@@ -76,14 +80,20 @@ class ServicioValidacionUsuario:
             estado=EstadoUsuario.SUSPENDIDO,
         )
 
-    async def _obtener_usuario_y_perfil(self, id_usuario: int):
-        usuario = await self.dao_usuario.obtener_por_id(id_usuario)
+    async def _obtener_usuario_y_perfil(
+        self, id_usuario: int, usando_bd=None, bloquear: bool = False
+    ):
+        usuario = await self.dao_usuario.obtener_por_id(
+            id_usuario, usando_bd=usando_bd, bloquear=bloquear
+        )
         if usuario is None:
-            raise ValueError("Usuario no encontrado.")
+            raise LookupError("Usuario no encontrado.")
 
-        perfil = await self.dao_perfil.obtener_por_usuario_id(id_usuario)
+        perfil = await self.dao_perfil.obtener_por_usuario_id(
+            id_usuario, usando_bd=usando_bd
+        )
         if perfil is None:
-            raise ValueError("El usuario no tiene un perfil institucional registrado.")
+            raise LookupError("El usuario no tiene un perfil institucional registrado.")
 
         return usuario, perfil
 

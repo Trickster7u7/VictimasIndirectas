@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 import httpx
 
 from app.modules.descargarRegistros.dto.PeriodoConsultaVictimasDTO import (
@@ -14,8 +14,9 @@ from app.modules.descargarRegistros.services.ServicioRegistrosVictimas import (
     ServicioRegistroVictimas,
 )
 
-from app.modules.usuarios.dependencias.DependenciasAutenticacion import (
-    obtener_usuario_activo,
+from app.modules.usuarios.dependencias.DependenciasPermisos import (
+    exigir_permiso,
+    exigir_permiso_en_rutas_existentes,
 )
 
 from app.modules.usuarios.models.UsuarioModel import (
@@ -50,10 +51,14 @@ router = APIRouter(
     summary="Consultar víctimas por mes y año",
 )
 async def consultar_registros_victimas(
+    response: Response,
     mes: int = Query(..., ge=1, le=12),
     anio: int = Query(..., ge=2000, le=2100),
-    usuario: Usuario = Depends(obtener_usuario_activo),
+    usuario: Usuario = Depends(
+        exigir_permiso_en_rutas_existentes("registros.consultar")
+    ),
 ):
+    response.headers["Cache-Control"] = "private, no-store"
     periodo = PeriodoConsultaVictimasDTO(
         mes=mes,
         anio=anio,
@@ -71,9 +76,12 @@ async def consultar_registros_victimas(
 @router.get(
     "/historico",
     response_model=RespuestaHistoricoDTO,
-    dependencies=[Depends(obtener_usuario_activo)],
+    dependencies=[Depends(
+        exigir_permiso_en_rutas_existentes("registros.consultar")
+    )],
 )
 async def consultar_historico(
+    response: Response,
     pagina: int = Query(1, ge=1),
     limite: int = Query(10, ge=1, le=100),
     curp: str | None = None,
@@ -85,6 +93,7 @@ async def consultar_historico(
     mes: int | None = Query(None, ge=1, le=12),
     anio: int | None = Query(None, ge=2000, le=2100),
 ):
+    response.headers["Cache-Control"] = "private, no-store"
     return await ServicioConsultaRegistrosVictimas.obtener_historico(
         pagina=pagina,
         limite=limite,
@@ -102,11 +111,15 @@ async def consultar_historico(
 @router.get(
     "/historico/{id_registro}",
     response_model=RegistroVictimaDetalleDTO,
-    dependencies=[Depends(obtener_usuario_activo)],
+    dependencies=[Depends(
+        exigir_permiso("registros.detalle.consultar")
+    )],
 )
 async def consultar_detalle_registro(
     id_registro: int,
+    response: Response,
 ):
+    response.headers["Cache-Control"] = "private, no-store"
     detalle = await (
         ServicioConsultaRegistrosVictimas.obtener_detalle(
             id_registro
@@ -130,7 +143,9 @@ async def consultar_detalle_registro(
     summary="Checklist mensual de descargas SESNSP desde enero de 2026",
 )
 async def consultar_estado_sincronizacion(
-    usuario: Usuario = Depends(obtener_usuario_activo),
+    usuario: Usuario = Depends(
+        exigir_permiso("registros.sincronizar")
+    ),
 ):
     return await ServicioSincronizacionVictimas.obtener_estado_mensual(
         usuario_autorizado=puede_sincronizar(usuario),
@@ -143,6 +158,9 @@ async def consultar_estado_sincronizacion(
 @router.post(
     "/sincronizacion",
     summary="Sincronizar víctimas desde SESNSP",
+    dependencies=[Depends(
+        exigir_permiso("registros.sincronizar")
+    )],
 )
 async def sincronizar_victimas(
     anio: int = Query(..., ge=2000, le=2100),

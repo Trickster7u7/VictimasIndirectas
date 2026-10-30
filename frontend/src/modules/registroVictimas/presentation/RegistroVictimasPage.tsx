@@ -28,6 +28,7 @@ import {
   consultarCandidatasRenapo,
   type RegistroHistorico,
 } from '../../consultarRegistro/infrastructure/registroVictimas.historico.service';
+import { usarPermisos } from '../../auth/application/PermisosContext';
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -74,6 +75,8 @@ function NnaRelacionados({ cantidad }: { cantidad?: number | null }) {
 
 export function RegistroVictimasPage() {
   const navegar = useNavigate();
+  const { tienePermiso } = usarPermisos();
+  const puedeVerDetalle = tienePermiso('registros.detalle.consultar');
 
   const [mes, setMes] = useState<number | ''>('');
   const [anio, setAnio] = useState<number | ''>('');
@@ -147,7 +150,7 @@ export function RegistroVictimasPage() {
 
   const cabeceras = [
     'CURP', 'Nombre completo', 'Edad', 'Fecha del hecho', 'Estado', 'Carpeta',
-    'NNA relacionados', 'Acciones',
+    'NNA relacionados', ...(puedeVerDetalle ? ['Acciones'] : []),
   ];
 
   return (
@@ -233,8 +236,7 @@ export function RegistroVictimasPage() {
                 value={filtros.carpeta} onChange={evento => cambiarFiltro('carpeta', evento.target.value)}
                 sx={ESTILOS_TABLA.filtro} /></TableCell>
               <TableCell />
-              <TableCell />
-              <TableCell />
+              {puedeVerDetalle && <TableCell />}
             </TableRow>
           </TableHead>
 
@@ -253,21 +255,23 @@ export function RegistroVictimasPage() {
                 <TableCell sx={ESTILOS_TABLA.celda}>
                   <NnaRelacionados cantidad={registro.numero_nna_relacionados} />
                 </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Ver detalle del registro">
-                    <IconButton size="small" sx={ESTILOS_TABLA.botonAccion}
-                      aria-label={`Ver detalle de ${registro.nombre_completo}`}
-                      onClick={() => navegar(`${CONFIGURACION_APLICACION.rutas.registroVictimas}/${registro.id_registro}`)}>
-                      <VisibilityOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
+                {puedeVerDetalle && (
+                  <TableCell align="center">
+                    <Tooltip title="Ver detalle del registro">
+                      <IconButton size="small" sx={ESTILOS_TABLA.botonAccion}
+                        aria-label={`Ver detalle de ${registro.nombre_completo}`}
+                        onClick={() => navegar(`${CONFIGURACION_APLICACION.rutas.registroVictimas}/${registro.id_registro}`)}>
+                        <VisibilityOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
 
             {registros.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 5 }}>
+                <TableCell colSpan={puedeVerDetalle ? 8 : 7} align="center" sx={{ py: 5 }}>
                   {cargando ? <CircularProgress size={25} /> : (
                     <Typography color="text.secondary">
                       {error ? 'No se pudieron cargar los registros.'

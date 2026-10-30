@@ -36,6 +36,7 @@ CONFIGURACION_TORTOISE = {
                 # Auditoría
                 "app.modules.usuarios.models.AuditoriaRolesModel",
                 "app.modules.usuarios.models.AuditoriaGruposModel",
+                "app.modules.usuarios.models.AuditoriaPermisosRolModel",
             ],
             "default_connection": "default",
             "migrations": "app.modules.usuarios.migrations",

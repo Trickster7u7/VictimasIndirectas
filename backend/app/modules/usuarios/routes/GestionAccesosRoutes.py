@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from tortoise.exceptions import IntegrityError
 
 from app.modules.usuarios.dependencias.DependenciasAutenticacion import (
@@ -6,23 +6,48 @@ from app.modules.usuarios.dependencias.DependenciasAutenticacion import (
 )
 from app.modules.usuarios.dependencias.DependenciasPermisos import exigir_permiso
 from app.modules.usuarios.dto.AccesosDTO import (
+    AprobarUsuarioDTO,
     AsignarRolesDTO,
     AsignarGruposDTO,
     CrearGrupoDTO,
     GrupoDTO,
     GruposUsuarioDTO,
+    AsignarPermisosRolDTO,
+    PaginaUsuariosDTO,
     PermisoDTO,
+    PermisosRolDTO,
     RolDTO,
     RolesGrupoDTO,
     RolesUsuarioDTO,
+    UsuarioAprobadoDTO,
 )
 from app.modules.usuarios.models.UsuarioModel import Usuario
+from app.modules.usuarios.models.UsuarioRolModel import UsuarioRol
+from app.modules.usuarios.models.catalogos.EstatusUsuarioModel import EstadoUsuario
 from app.modules.usuarios.services.ServicioAutorizacion import ServicioAutorizacion
+from app.modules.usuarios.services.ServicioAdministracionUsuarios import (
+    ServicioAdministracionUsuarios,
+)
 from app.modules.usuarios.services.ServicioGestionAccesos import ServicioGestionAccesos
 from app.modules.usuarios.services.ServicioGestionGrupos import ServicioGestionGrupos
+from app.modules.usuarios.services.ServicioPermisosRol import ServicioPermisosRol
+from app.modules.usuarios.services.ServicioValidacionUsuario import ServicioValidacionUsuario
 
 
 router = APIRouter(prefix="/api/usuarios", tags=["Gestión de accesos"])
+
+
+async def exigir_administrador_directo(
+    usuario: Usuario = Depends(obtener_usuario_activo),
+) -> Usuario:
+    """La edición del catálogo no se delega a otros roles."""
+    if not await UsuarioRol.filter(
+        usuario_id=usuario.id,
+        rol__codigo="ADMINISTRADOR",
+        rol__activo=True,
+    ).exists():
+        raise HTTPException(status_code=403, detail="Se requiere ADMINISTRADOR.")
+    return usuario
 
 
 @router.get("/mis-permisos", response_model=list[str])
@@ -30,6 +55,76 @@ async def consultar_mis_permisos(
     usuario: Usuario = Depends(obtener_usuario_activo),
 ):
     return sorted(await ServicioAutorizacion.obtener_permisos(usuario))
+
+
+@router.post(
+    "/administracion/usuarios/{id_usuario}/aprobar",
+    response_model=UsuarioAprobadoDTO,
+)
+async def aprobar_usuario(
+    id_usuario: int,
+    datos: AprobarUsuarioDTO,
+    usuario_actor: Usuario = Depends(exigir_permiso("usuarios.validar")),
+):
+    if id_usuario == usuario_actor.id:
+        raise HTTPException(
+            status_code=400, detail="No puedes aprobar tu propia cuenta."
+        )
+
+    try:
+        aprobado = await ServicioValidacionUsuario().aprobar_usuario(
+            id_usuario=id_usuario,
+            usuario_validador=usuario_actor,
+            observaciones=datos.observaciones,
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    return UsuarioAprobadoDTO(
+        id_usuario=aprobado.id,
+        estado=aprobado.estado.value if hasattr(aprobado.estado, "value") else aprobado.estado,
+    )
+
+
+@router.post(
+    "/administracion/usuarios/{id_usuario}/rechazar",
+    response_model=UsuarioAprobadoDTO,
+)
+async def rechazar_usuario(
+    id_usuario: int,
+    datos: AprobarUsuarioDTO,
+    usuario_actor: Usuario = Depends(exigir_permiso("usuarios.validar")),
+):
+    if id_usuario == usuario_actor.id:
+        raise HTTPException(status_code=400, detail="No puedes rechazar tu propia cuenta.")
+    try:
+        rechazado = await ServicioValidacionUsuario().rechazar_usuario(
+            id_usuario=id_usuario,
+            usuario_validador=usuario_actor,
+            observaciones=datos.observaciones or "",
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    return UsuarioAprobadoDTO(id_usuario=rechazado.id, estado=str(rechazado.estado))
+
+
+@router.get("/administracion/usuarios", response_model=PaginaUsuariosDTO)
+async def listar_usuarios_administracion(
+    response: Response,
+    buscar: str = Query("", max_length=80),
+    estado: EstadoUsuario | None = None,
+    pagina: int = Query(1, ge=1),
+    limite: int = Query(20, ge=1, le=100),
+    _administrador: Usuario = Depends(exigir_administrador_directo),
+):
+    response.headers["Cache-Control"] = "private, no-store"
+    return await ServicioAdministracionUsuarios.listar(
+        buscar=buscar.strip(), estado=estado, pagina=pagina, limite=limite
+    )
 
 
 @router.get(
@@ -48,6 +143,41 @@ async def listar_roles():
 )
 async def listar_permisos():
     return await ServicioGestionAccesos.listar_permisos()
+
+
+@router.get(
+    "/administracion/roles/{id_rol}/permisos",
+    response_model=PermisosRolDTO,
+)
+async def consultar_permisos_rol(
+    id_rol: int,
+    _administrador: Usuario = Depends(exigir_administrador_directo),
+):
+    try:
+        return await ServicioPermisosRol.consultar(id_rol)
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@router.put(
+    "/administracion/roles/{id_rol}/permisos",
+    response_model=PermisosRolDTO,
+)
+async def actualizar_permisos_rol(
+    id_rol: int,
+    datos: AsignarPermisosRolDTO,
+    administrador: Usuario = Depends(exigir_administrador_directo),
+):
+    try:
+        return await ServicioPermisosRol.guardar(
+            id_rol=id_rol,
+            ids_permisos=datos.ids_permisos,
+            usuario_actor=administrador,
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
 @router.get(

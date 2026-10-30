@@ -3,6 +3,7 @@ from tortoise.expressions import Q
 from app.modules.descargarRegistros.models.RegistroVictimasModel import (
     RegistroVictimaDescargado,
 )
+from app.modules.descargarRegistros.models.DescargaVictimasModel import DescargaVictimas
 
 from app.core.validaciones.curp import PATRON_CURP
 
@@ -36,3 +37,15 @@ class EstadisticasVictimasDAO:
         ).count()
 
         return total, menores, curps_invalidas
+
+    @staticmethod
+    async def consultar_periodos_agregados() -> list[dict]:
+        # No consultar filas individuales: ni nombres, CURP, domicilios,
+        # carpetas de investigación ni datos SSPC completos.
+        return await DescargaVictimas.filter(
+            origen="API_SSPC",
+            estado="completado",
+            verificado_api=True,
+        ).order_by("-anio", "-mes").limit(36).values(
+            "anio", "mes", "cantidad_registros"
+        )

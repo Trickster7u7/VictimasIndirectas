@@ -1,4 +1,3 @@
-import.meta.env
 export const CONFIGURACION_APLICACION = {
   nombre: 'Registro Nacional de Niñas, Niños y Adolescentes en Orfandad por Feminicidio',
   nombreCorto: 'RNNNAOF',
@@ -11,7 +10,6 @@ export const CONFIGURACION_APLICACION = {
 
   api: {
     url: import.meta.env.VITE_API_URL_QUAS || 'https://dtiviqa.dif.gob.mx',
-    /* url: import.meta.env.VITE_API_URL_QUAS || 'https://localhost:8000', */
   },
 
   rutas: {
@@ -24,6 +22,8 @@ export const CONFIGURACION_APLICACION = {
     suspendido: '/suspendido',
 
     consultaRegistros: '/consulta-registros',
+    resumenRegistros: '/resumen-registros',
     registroVictimas: '/registro-victimas',
+    administracionUsuarios: '/administracion/usuarios',
   },
 } as const;

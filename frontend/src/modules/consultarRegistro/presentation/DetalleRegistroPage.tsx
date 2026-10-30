@@ -6,11 +6,14 @@ import {
   Button,
   Chip,
   CircularProgress,
-  Paper,
   Typography,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Stack,
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
-
+import { ExpandMore } from '@mui/icons-material';
 import { TABLAS } from '../../../config/tablas.config';
 import { CONFIGURACION_APLICACION } from '../../../config/aplicacion.config';
 import {
@@ -144,40 +147,59 @@ export function DetalleRegistroPage() {
       )}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {detalle && (
-        <>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-            <Chip label={`Periodo: ${detalle.mes}/${detalle.anio}`} />
-            <Chip label={`ID interno: ${detalle.id_registro}`} />
-            <Chip
-              label={detalle.origen === 'API_SSPC' ? 'Origen: SESNSP' : 'Origen: JSON local'}
-              variant="outlined"
-              color={detalle.origen === 'API_SSPC' ? 'success' : 'default'}
-            />
-          </Box>
+    {detalle && (
+      <>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+          <Chip label={`Periodo: ${detalle.mes}/${detalle.anio}`} />
+          <Chip label={`ID interno: ${detalle.id_registro}`} />
+          <Chip
+            label={detalle.origen === 'API_SSPC' ? 'Origen: SESNSP' : 'Origen: JSON local'}
+            variant="outlined"
+            color={detalle.origen === 'API_SSPC' ? 'success' : 'default'}
+          />
+        </Box>
 
-          {SECCIONES.map(seccion => ({
-            ...seccion,
-            campos: [...seccion.campos],
-          })).filter(seccion => seccion.campos.length > 0).map(seccion => (
-            <Paper
-              key={seccion.titulo}
-              variant="outlined"
-              sx={{ mb: 3, overflow: 'hidden', borderRadius: 2 }}
+        {SECCIONES.map(seccion => (
+          <Accordion
+            key={seccion.titulo}
+            defaultExpanded={false}
+            variant="outlined"
+            disableGutters
+            sx={{
+              mb: 2,
+              borderRadius: '12px !important',
+              overflow: 'hidden',
+              '&:before': { display: 'none' },
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              sx={{
+                backgroundColor: TABLAS.colores.encabezado,
+                px: 3,
+                minHeight: 62,
+                '& .MuiAccordionSummary-content': {
+                  my: 1.5,
+                },
+              }}
             >
-              <Box
-                sx={{
-                  backgroundColor: TABLAS.colores.encabezado,
-                  color: '#fff',
-                  px: 3,
-                  py: 1.5,
-                }}
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1.25}
               >
-                <Typography fontWeight={800}>{seccion.titulo}</Typography>
-              </Box>
+                <Typography
+                  fontWeight={800}
+                  sx={{ color: '#fff' }}
+                >
+                  {seccion.titulo}
+                </Typography>
+              </Stack>
+            </AccordionSummary>
+
+            <AccordionDetails sx={{ p: 3 }}>
               <Box
                 sx={{
-                  p: 3,
                   display: 'grid',
                   gridTemplateColumns: {
                     xs: '1fr',
@@ -192,39 +214,95 @@ export function DetalleRegistroPage() {
                     <Typography variant="caption" color="text.secondary">
                       {tituloCampo(campo)}
                     </Typography>
+
                     <Typography
                       fontWeight={600}
-                      sx={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+                      sx={{
+                        whiteSpace: 'pre-wrap',
+                        overflowWrap: 'anywhere',
+                      }}
                     >
                       {textoCampo(detalle.campos[campo])}
                     </Typography>
                   </Box>
                 ))}
               </Box>
-            </Paper>
-          ))}
+            </AccordionDetails>
+          </Accordion>
+        ))}
 
-          {Object.keys(detalle.campos).some(
-            campo => !SECCIONES.some(seccion => (seccion.campos as readonly string[]).includes(campo))
-          ) && (
-            <Paper variant="outlined" sx={{ mb: 3, borderRadius: 2, overflow: 'hidden' }}>
-              <Box sx={{ backgroundColor: TABLAS.colores.encabezado, color: '#fff', px: 3, py: 1.5 }}>
-                <Typography fontWeight={800}>Otros campos del archivo</Typography>
+        {Object.keys(detalle.campos).some(
+          campo =>
+            !SECCIONES.some(seccion =>
+              (seccion.campos as readonly string[]).includes(campo)
+            )
+        ) && (
+          <Accordion
+            defaultExpanded={false}
+            variant="outlined"
+            disableGutters
+            sx={{
+              mb: 3,
+              borderRadius: '12px !important',
+              overflow: 'hidden',
+              '&:before': { display: 'none' },
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMore />}
+              sx={{
+                backgroundColor: TABLAS.colores.encabezado,
+                px: 3,
+                minHeight: 62,
+              }}
+            >
+              <Typography fontWeight={800} sx={{ color: '#fff' }}>
+                Otros campos del archivo
+              </Typography>
+            </AccordionSummary>
+
+            <AccordionDetails sx={{ p: 3 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: 'repeat(2, minmax(0, 1fr))',
+                    lg: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  gap: 2,
+                }}
+              >
+                {Object.entries(detalle.campos)
+                  .filter(
+                    ([campo]) =>
+                      !SECCIONES.some(seccion =>
+                        (seccion.campos as readonly string[]).includes(campo)
+                      )
+                  )
+                  .map(([campo, valor]) => (
+                    <Box key={campo} sx={{ minWidth: 0 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {tituloCampo(campo)}
+                      </Typography>
+
+                      <Typography
+                        fontWeight={600}
+                        sx={{
+                          overflowWrap: 'anywhere',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {textoCampo(valor)}
+                      </Typography>
+                    </Box>
+                  ))}
               </Box>
-              <Box sx={{ p: 3, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
-                {Object.entries(detalle.campos).filter(([campo]) =>
-                  !SECCIONES.some(seccion => (seccion.campos as readonly string[]).includes(campo))
-                ).map(([campo, valor]) => (
-                  <Box key={campo}>
-                    <Typography variant="caption" color="text.secondary">{tituloCampo(campo)}</Typography>
-                    <Typography fontWeight={600} sx={{ overflowWrap: 'anywhere' }}>{textoCampo(valor)}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Paper>
-          )}
-        </>
-      )}
+            </AccordionDetails>
+          </Accordion>
+        )}
+      </>
+    )}
     </Box>
   );
 }

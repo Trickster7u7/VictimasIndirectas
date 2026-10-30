@@ -29,6 +29,7 @@ import {
   type RegistroHistorico,
 } from '../infrastructure/registroVictimas.historico.service';
 import { ControlSincronizacionVictimas } from './ControlSincronizacionVictimas';
+import { usarPermisos } from '../../auth/application/PermisosContext';
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -75,6 +76,9 @@ function etiquetaOrigen(registro: RegistroHistorico): string {
 
 export function ConsultaRegistrosPage() {
   const navigate = useNavigate();
+  const { tienePermiso } = usarPermisos();
+  const puedeSincronizar = tienePermiso('registros.sincronizar');
+  const puedeVerDetalle = tienePermiso('registros.detalle.consultar');
 
   // Vacíos por defecto: el histórico debe mostrar TODOS los meses al abrirse.
   const [mes, setMes] = useState<number | ''>('');
@@ -155,7 +159,8 @@ export function ConsultaRegistrosPage() {
 
   const encabezados = [
     'Mes', 'Año', 'CURP', 'Nombre completo', 'Fecha del hecho',
-    'Edad', 'Entidad', 'Número de carpeta', 'Origen', 'Acciones',
+    'Edad', 'Entidad', 'Número de carpeta', 'Origen',
+    ...(puedeVerDetalle ? ['Acciones'] : []),
   ];
 
   const hayFiltrosActivos = mes !== '' || anio !== '' ||
@@ -163,9 +168,11 @@ export function ConsultaRegistrosPage() {
 
   return (
     <Box>
-      <ControlSincronizacionVictimas
-        alActualizarHistorico={() => setRecarga(anterior => anterior + 1)}
-      />
+      {puedeSincronizar && (
+        <ControlSincronizacionVictimas
+          alActualizarHistorico={() => setRecarga(anterior => anterior + 1)}
+        />
+      )}
       {/* Filtros de periodo del histórico: NO realizan una descarga SESNSP. */}
       <Paper
         elevation={0}
@@ -317,16 +324,18 @@ export function ConsultaRegistrosPage() {
                 />
               </TableCell>
               <TableCell />
-              <TableCell align="center">
-                <Tooltip title="Limpiar filtros">
-                  <IconButton
-                    size="small" onClick={limpiarFiltros}
-                    sx={ESTILOS_TABLA.botonLimpiar}
-                  >
-                    <RestartAlt />
-                  </IconButton>
-                </Tooltip>
-              </TableCell>
+              {puedeVerDetalle && (
+                <TableCell align="center">
+                  <Tooltip title="Limpiar filtros">
+                    <IconButton
+                      size="small" onClick={limpiarFiltros}
+                      sx={ESTILOS_TABLA.botonLimpiar}
+                    >
+                      <RestartAlt />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              )}
             </TableRow>
           </TableHead>
 
@@ -359,23 +368,25 @@ export function ConsultaRegistrosPage() {
                     />
                   </Tooltip>
                 </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Ver los 48 campos del registro">
-                    <IconButton
-                      size="small"
-                      sx={ESTILOS_TABLA.botonAccion}
-                      onClick={() => navigate(`/consulta-registros/${registro.id_registro}`)}
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
+                {puedeVerDetalle && (
+                  <TableCell align="center">
+                    <Tooltip title="Ver los 48 campos del registro">
+                      <IconButton
+                        size="small"
+                        sx={ESTILOS_TABLA.botonAccion}
+                        onClick={() => navigate(`/consulta-registros/${registro.id_registro}`)}
+                      >
+                        <Visibility fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
 
             {registros.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 5 }}>
+                <TableCell colSpan={puedeVerDetalle ? 10 : 9} align="center" sx={{ py: 5 }}>
                   {cargando ? (
                     <CircularProgress size={25} />
                   ) : (

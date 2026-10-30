@@ -3,6 +3,22 @@ from app.modules.usuarios.models.UsuarioModel import Usuario
 from app.modules.usuarios.models.catalogos.EstatusUsuarioModel import EstadoUsuario
 
 class UsuarioDAO:
+
+    @staticmethod
+    async def obtener_por_id(
+        id_usuario: int,
+        usando_bd=None,
+        bloquear: bool = False,
+    ) -> Usuario | None:
+        consulta = Usuario.filter(id=id_usuario)
+
+        if usando_bd is not None:
+            consulta = consulta.using_db(usando_bd)
+
+        if bloquear:
+            consulta = consulta.select_for_update()
+
+        return await consulta.first()
     
     @staticmethod
     async def crear(
