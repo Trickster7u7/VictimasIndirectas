@@ -9,7 +9,7 @@ export function NavegacionPagina() {
   const { pathname } = useLocation();
   const { usuario } = usarAutenticacion();
   const inicioUsuario = usuario ? obtenerRutaUsuario(usuario.estado) : '/';
-  const titulo = TITULOS_RUTA[pathname] ?? 'Sección';
+  const titulo = TITULOS_RUTA[pathname] ?? 'Detalles de la víctima';
   return (
     <Stack spacing={1.5} sx={{ mb: 2.5 }}>
       <Breadcrumbs separator="›" aria-label="Ruta de navegación">

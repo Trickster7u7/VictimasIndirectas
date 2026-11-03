@@ -49,3 +49,41 @@ class EstadisticasVictimasDAO:
         ).order_by("-anio", "-mes").limit(36).values(
             "anio", "mes", "cantidad_registros"
         )
+    @staticmethod
+    async def consultar_rango_periodos() -> tuple[str | None, str | None]:
+        """
+        Obtiene el primer y último periodo disponible
+        de las descargas verificadas del SESNSP.
+
+        No consulta información personal de las víctimas.
+        """
+
+        consulta = DescargaVictimas.filter(
+            origen="API_SSPC",
+            estado="completado",
+            verificado_api=True,
+            cantidad_registros__gt=0,
+        )
+
+        primer_periodo = await consulta.order_by(
+            "anio",
+            "mes",
+        ).first()
+
+        ultimo_periodo = await consulta.order_by(
+            "-anio",
+            "-mes",
+        ).first()
+
+        if primer_periodo is None or ultimo_periodo is None:
+            return None, None
+
+        periodo_inicio = (
+            f"{primer_periodo.anio}-{primer_periodo.mes:02d}"
+        )
+
+        periodo_fin = (
+            f"{ultimo_periodo.anio}-{ultimo_periodo.mes:02d}"
+        )
+
+        return periodo_inicio, periodo_fin

@@ -3,7 +3,6 @@ import { DISENO } from './diseno.config';
 
 /**
  * Configuración visual centralizada de las tablas.
- * Reutiliza la identidad institucional del sistema.
  */
 export const TABLAS = {
   colores: {
@@ -19,11 +18,12 @@ export const TABLAS = {
   },
 
   dimensiones: {
-    anchoMinimo: 1250,
+    anchoMinimo: 1050,
     altoFiltro: 35,
-    anchoMinimoFiltro: 110,
-    anchoFiltroFecha: 155,
+    anchoMinimoFiltro: 0,
+    anchoFiltroFecha: 120,
     radioBorde: 1.5,
+    altoMaximo: 650,
   },
 
   tipografia: {
@@ -37,8 +37,18 @@ export const TABLAS = {
   espaciado: {
     encabezadoVertical: 2,
     celdaVertical: 1.25,
-    celdaHorizontal: 2,
+    celdaHorizontal: 1,
   },
+
+  responsive: {
+    ancho: '100%',
+    anchoMaximo: '100%',
+    desbordamiento: 'auto',
+    tablaLayout: 'fixed',
+    anchoMovil: 1050,
+  },
+
+  encabezadoFijo: true,
 
   paginacion: {
     filasIniciales: 10,
@@ -52,10 +62,24 @@ export const TABLAS = {
  */
 export const ESTILOS_TABLA = {
   contenedor: {
+    width: TABLAS.responsive.ancho,
+    maxWidth: TABLAS.responsive.anchoMaximo,
+    minWidth: 0,
     border: 1,
     borderColor: TABLAS.colores.borde,
     borderRadius: TABLAS.dimensiones.radioBorde,
-    overflowX: 'auto',
+    overflowX: TABLAS.responsive.desbordamiento,
+    overflowY: 'auto',
+    maxHeight: TABLAS.dimensiones.altoMaximo,
+  },
+
+  tabla: {
+    width: '100%',
+    tableLayout: TABLAS.responsive.tablaLayout,
+    minWidth: {
+      xs: TABLAS.responsive.anchoMovil,
+      md: 0,
+    },
   },
 
   encabezado: {
@@ -67,7 +91,10 @@ export const ESTILOS_TABLA = {
     fontWeight: TABLAS.tipografia.grosorEncabezado,
     fontSize: TABLAS.tipografia.encabezado,
     py: TABLAS.espaciado.encabezadoVertical,
+    px: TABLAS.espaciado.celdaHorizontal,
     whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     borderBottom: 0,
   },
 
@@ -76,23 +103,23 @@ export const ESTILOS_TABLA = {
   },
 
   filtro: {
+    width: '100%',
     minWidth: TABLAS.dimensiones.anchoMinimoFiltro,
-
     '& .MuiOutlinedInput-root': {
       bgcolor: TABLAS.colores.filtroFondo,
       borderRadius: 1,
       height: TABLAS.dimensiones.altoFiltro,
       fontSize: TABLAS.tipografia.filtros,
     },
-
     '& .MuiInputBase-input': {
       fontSize: TABLAS.tipografia.filtros,
+      px: 0.75,
     },
   },
 
   filtroFecha: {
+    width: '100%',
     minWidth: TABLAS.dimensiones.anchoFiltroFecha,
-
     '& .MuiOutlinedInput-root': {
       bgcolor: TABLAS.colores.filtroFondo,
       borderRadius: 1,
@@ -107,6 +134,9 @@ export const ESTILOS_TABLA = {
     py: TABLAS.espaciado.celdaVertical,
     px: TABLAS.espaciado.celdaHorizontal,
     borderColor: TABLAS.colores.borde,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 
   celdaDestacada: {

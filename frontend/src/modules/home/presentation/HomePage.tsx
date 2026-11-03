@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from 'react';
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -10,13 +9,15 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ChildCareOutlinedIcon from '@mui/icons-material/ChildCareOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 
 import { usarAutenticacion } from '../../auth/application/usarAutenticacion';
+
 import {
   consultarEstadisticasVictimas,
   type EstadisticasVictimas,
@@ -32,27 +33,74 @@ interface TarjetaMetricaProps {
   cargando: boolean;
 }
 
-function TarjetaMetrica({ titulo, valor, descripcion, icono, cargando }: TarjetaMetricaProps) {
+function TarjetaMetrica({
+  titulo,
+  valor,
+  descripcion,
+  icono,
+  cargando,
+}: TarjetaMetricaProps) {
   return (
-    <Card sx={{ height: '100%', borderTop: 4, borderTopColor: 'primary.main' }}>
+    <Card
+      sx={{
+        height: '100%',
+        borderTop: 4,
+        borderTopColor: 'primary.main',
+      }}
+    >
       <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          spacing={2}
+        >
           <Box>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 650 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 650 }}
+            >
               {titulo}
             </Typography>
+
             {cargando ? (
-              <Skeleton variant="text" width={100} height={52} sx={{ my: 0.5 }} />
+              <Skeleton
+                variant="text"
+                width={100}
+                height={52}
+                sx={{ my: 0.5 }}
+              />
             ) : (
-              <Typography variant="h4" sx={{ mt: 1, mb: 0.5, fontSize: 34, color: 'primary.main' }}>
-                {valor === null ? '—' : valor.toLocaleString('es-MX')}
+              <Typography
+                variant="h4"
+                sx={{
+                  mt: 1,
+                  mb: 0.5,
+                  fontSize: 34,
+                  color: 'primary.main',
+                }}
+              >
+                {valor === null
+                  ? '—'
+                  : valor.toLocaleString('es-MX')}
               </Typography>
             )}
           </Box>
-          <Box sx={{ display: 'flex', p: 1.25, borderRadius: 2, color: 'primary.main', bgcolor: 'action.hover' }}>
+
+          <Box
+            sx={{
+              display: 'flex',
+              p: 1.25,
+              borderRadius: 2,
+              color: 'primary.main',
+              bgcolor: 'action.hover',
+            }}
+          >
             {icono}
           </Box>
         </Stack>
+
         <Typography variant="caption" color="text.secondary">
           {descripcion}
         </Typography>
@@ -63,49 +111,89 @@ function TarjetaMetrica({ titulo, valor, descripcion, icono, cargando }: Tarjeta
 
 function formatearFecha(fecha: string): string {
   const valor = new Date(fecha);
-  if (Number.isNaN(valor.getTime())) return 'Sin fecha disponible';
+
+  if (Number.isNaN(valor.getTime())) {
+    return 'Sin fecha disponible';
+  }
+
   return valor.toLocaleString('es-MX', {
     timeZone: 'America/Mexico_City',
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
+}
+
+function formatearPeriodo(periodo: string | null | undefined): string {
+  if (!periodo) return 'Sin dato';
+
+  const coincidencia = /^(\d{4})-(\d{2})$/.exec(periodo);
+
+  if (!coincidencia) return periodo;
+
+  const anio = Number(coincidencia[1]);
+  const mes = Number(coincidencia[2]);
+
+  if (mes < 1 || mes > 12) return periodo;
+
+  const fecha = new Date(Date.UTC(anio, mes - 1, 1));
+
+  return new Intl.DateTimeFormat('es-MX', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(fecha);
 }
 
 export function HomePage() {
   const { usuario } = usarAutenticacion();
   const idUsuario = usuario?.id;
+
   const [mostrar, establecerMostrar] = useState(
     () => sessionStorage.getItem(CLAVE_ALERTA) !== '1',
   );
-  const [estadisticas, establecerEstadisticas] = useState<EstadisticasVictimas | null>(null);
+
+  const [estadisticas, establecerEstadisticas] =
+    useState<EstadisticasVictimas | null>(null);
+
   const [cargando, establecerCargando] = useState(true);
   const [error, establecerError] = useState<string | null>(null);
-  const [solicitud, establecerSolicitud] = useState(0);
 
+  // Consultar estadísticas automáticamente al entrar al Home.
   useEffect(() => {
     if (idUsuario == null) return;
 
     const controlador = new AbortController();
+
     establecerCargando(true);
     establecerError(null);
+    establecerEstadisticas(null);
 
     consultarEstadisticasVictimas(controlador.signal)
       .then((datos) => {
-        if (!controlador.signal.aborted) establecerEstadisticas(datos);
+        if (!controlador.signal.aborted) {
+          establecerEstadisticas(datos);
+        }
       })
       .catch((motivo: unknown) => {
         if (!controlador.signal.aborted) {
           establecerError(
-            motivo instanceof Error ? motivo.message : 'No se pudieron consultar las estadísticas.',
+            motivo instanceof Error
+              ? motivo.message
+              : 'No se pudieron consultar las estadísticas.',
           );
         }
       })
       .finally(() => {
-        if (!controlador.signal.aborted) establecerCargando(false);
+        if (!controlador.signal.aborted) {
+          establecerCargando(false);
+        }
       });
 
     return () => controlador.abort();
-  }, [idUsuario, solicitud]);
+  }, [idUsuario]);
 
   if (!usuario) return null;
 
@@ -116,33 +204,94 @@ export function HomePage() {
 
   return (
     <Stack spacing={3}>
+      {/* ALERTA DE VALIDACIÓN */}
       {mostrar && (
-        <Alert severity="success" onClose={cerrar} variant="outlined" role="status">
-          <strong>Cuenta validada.</strong> Tu cuenta se encuentra activa y ya puedes utilizar los módulos habilitados.
+        <Alert
+          severity="success"
+          onClose={cerrar}
+          variant="outlined"
+          role="status"
+        >
+          <strong>Cuenta validada.</strong> Tu cuenta se encuentra
+          activa y ya puedes utilizar los módulos habilitados.
         </Alert>
       )}
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }}>
+      {/* ENCABEZADO Y PERIODO */}
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+      >
         <Box>
-          <Typography variant="h6">Metricas generales</Typography>
-          <Typography variant="body2" color="text.secondary">
-            metricas generadas a partir de la informacion de SESNSP
+          <Typography
+            sx={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: 'text.primary',
+            }}
+          >
+            Métricas generales
+          </Typography>
+
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5 }}
+          >
+            Indicadores generados a partir de la información del SESNSP.
           </Typography>
         </Box>
-        <Button
-          size="small"
+
+        {/* PERIODO DE INFORMACIÓN */}
+        <Chip
+          icon={<CalendarMonthOutlinedIcon />}
           variant="outlined"
-          startIcon={<RefreshOutlinedIcon />}
-          onClick={() => establecerSolicitud((actual) => actual + 1)}
-          disabled={cargando}
-        >
-          Actualizar indicadores
-        </Button>
+          sx={{
+            height: 'auto',
+            minHeight: 36,
+            py: 0.5,
+            fontWeight: 700,
+            borderColor: 'primary.main',
+            color: 'primary.main',
+            '& .MuiChip-label': {
+              whiteSpace: 'normal',
+            },
+          }}
+          label={
+            cargando
+              ? 'Consultando periodo...'
+              : estadisticas?.periodo_inicio &&
+                  estadisticas?.periodo_fin
+                ? `Periodo: ${formatearPeriodo(
+                    estadisticas.periodo_inicio,
+                  )} – ${formatearPeriodo(
+                    estadisticas.periodo_fin,
+                  )}`
+                : 'Periodo no disponible'
+          }
+        />
       </Stack>
 
-      {error && <Alert severity="error" role="alert">{error}</Alert>}
+      {/* ERRORES */}
+      {error && (
+        <Alert severity="error" role="alert">
+          {error}
+        </Alert>
+      )}
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
+      {/* TARJETAS DE ESTADÍSTICAS */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: 'repeat(3, minmax(0, 1fr))',
+          },
+          gap: 2,
+        }}
+      >
         <TarjetaMetrica
           titulo="Total de víctimas"
           valor={estadisticas?.total_victimas ?? null}
@@ -150,6 +299,7 @@ export function HomePage() {
           icono={<PeopleAltOutlinedIcon fontSize="large" />}
           cargando={cargando}
         />
+
         <TarjetaMetrica
           titulo="Víctimas menores de 18 años"
           valor={estadisticas?.victimas_menores_18 ?? null}
@@ -157,6 +307,7 @@ export function HomePage() {
           icono={<ChildCareOutlinedIcon fontSize="large" />}
           cargando={cargando}
         />
+
         <TarjetaMetrica
           titulo="Registros con CURP inválida"
           valor={estadisticas?.registros_curp_invalida ?? null}
@@ -166,17 +317,34 @@ export function HomePage() {
         />
       </Box>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-        <Chip icon={<CheckCircleOutlineIcon />} color="success" size="small" variant="outlined" label="Fuente: SESNSP verificada" />
+      {/* FUENTE Y FECHA DE CONSULTA */}
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1}
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+      >
+        <Chip
+          icon={<CheckCircleOutlineIcon />}
+          color="success"
+          size="small"
+          variant="outlined"
+          label="Fuente: SESNSP verificada"
+        />
+
         {estadisticas && (
           <Typography variant="caption" color="text.secondary">
-            Consulta realizada: {formatearFecha(estadisticas.fecha_consulta)} (CDMX)
+            Consulta realizada:{' '}
+            {formatearFecha(estadisticas.fecha_consulta)} (CDMX)
           </Typography>
         )}
       </Stack>
 
+      {/* NOTA INFORMATIVA */}
       <Typography variant="caption" color="text.secondary">
-        Los indicadores cuentan registros históricos almacenados, no personas únicas. Si una víctima aparece en más de un periodo se contabilizará en cada uno. No se incluyen cargas JSON de prueba.
+        Los indicadores cuentan registros históricos almacenados,
+        no personas únicas. Si una víctima aparece en más de un
+        periodo se contabilizará en cada uno. No se incluyen
+        cargas JSON de prueba.
       </Typography>
     </Stack>
   );

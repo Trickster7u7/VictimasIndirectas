@@ -12,8 +12,7 @@ import {
   AccordionSummary,
   Stack,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import { ExpandMore } from '@mui/icons-material';
+import { ArrowBack, ExpandMore, OpenInNew } from '@mui/icons-material';
 import { TABLAS } from '../../../config/tablas.config';
 import { CONFIGURACION_APLICACION } from '../../../config/aplicacion.config';
 import {
@@ -23,53 +22,61 @@ import {
 
 const SECCIONES = [
   {
-    titulo: '1. Identificación de la víctima',
+    titulo: '1. Datos generales',
     campos: [
-      'IdentificadorVictima', 'Nombre', 'PrimerApellido', 'SegundoApellido',
-      'CURP', 'TipoVictima', 'TipoPersonaMoral', 'Sexo', 'Genero',
-      'PoblacionIndigena', 'Discapacidad', 'FechaNacimiento', 'Edad',
-      'Nacionalidad', 'EntidadReportante', 'UsuarioReportante',
+      'Sexo',
+      'Genero',
+      'FechaNacimiento',
+      'Edad',
+      'Nacionalidad',
+      'EntidadReportante',
     ],
   },
   {
-    titulo: '2. Corte, carpeta e información del delito',
+    titulo: '2. Carpeta de investigación',
     campos: [
-      'AnioCorte', 'MesCorte', 'IdentificadorCarpeta', 'NumeroCarpeta',
-      'FechaInicioCarpeta', 'HoraInicioCarpeta', 'ResumenHechos',
-      'IdentificadorDelito', 'DelitoFiscalia', 'ModalidadFiscalia',
-      'BienJuridico', 'DelitoCatalogo', 'SubtipoDelito', 'ModalidadCatalogo',
-      'FormaAccion', 'InstrumentoComision',
+      'NumeroCarpeta',
+      'FechaInicioCarpeta',
+      'HoraInicioCarpeta',
     ],
   },
   {
-    titulo: '3. Hechos y ubicación',
+    titulo: '3. Información del delito',
     campos: [
-      'GradoConsumacion', 'FechaHechos', 'HoraHechos', 'BienJuridicoSabana',
-      'DelitoSabana', 'SubtipoDelitoSabana', 'ModalidadDelitoSabana',
-      'EntidadHechos', 'MunicipioHechos', 'LocalidadHechos', 'ColoniaHechos',
-      'CodigoPostal', 'DomicilioHechos', 'CoordenadaX', 'CoordenadaY',
-      'FechaRegistro',
+      'DelitoFiscalia',
+      'ModalidadFiscalia',
+      'BienJuridico',
+      'DelitoCatalogo',
+      'SubtipoDelito',
+      'ModalidadCatalogo',
+      'FormaAccion',
+      'InstrumentoComision',
+    ],
+  },
+  {
+    titulo: '4. Hechos y ubicación',
+    campos: [
+      'GradoConsumacion',
+      'FechaHechos',
+      'HoraHechos',
+      'BienJuridicoSabana',
+      'EntidadHechos',
+      'MunicipioHechos',
     ],
   },
 ] as const;
 
 const ETIQUETAS: Record<string, string> = {
   CURP: 'CURP',
-  AnioCorte: 'Año de corte',
-  MesCorte: 'Mes de corte',
-  IdentificadorVictima: 'Identificador de víctima',
-  IdentificadorCarpeta: 'Identificador de carpeta',
-  IdentificadorDelito: 'Identificador del delito',
   NumeroCarpeta: 'Número de carpeta',
   FechaInicioCarpeta: 'Fecha de inicio de carpeta',
   HoraInicioCarpeta: 'Hora de inicio de carpeta',
   FechaNacimiento: 'Fecha de nacimiento',
   FechaHechos: 'Fecha de los hechos',
   HoraHechos: 'Hora de los hechos',
-  FechaRegistro: 'Fecha de registro',
-  CodigoPostal: 'Código postal',
-  CoordenadaX: 'Coordenada X',
-  CoordenadaY: 'Coordenada Y',
+  BienJuridicoSabana: 'Bien jurídico de los hechos',
+  EntidadHechos: 'Entidad de los hechos',
+  MunicipioHechos: 'Municipio de los hechos',
 };
 
 function tituloCampo(campo: string): string {
@@ -125,20 +132,17 @@ export function DetalleRegistroPage() {
 
   return (
     <Box>
-      <Button startIcon={<ArrowBack />}
-        onClick={() => navigate(vieneDeRegistro
-          ? CONFIGURACION_APLICACION.rutas.registroVictimas
-          : CONFIGURACION_APLICACION.rutas.consultaRegistros)}
-        sx={{ mb: 2 }}>
+      <Button
+        startIcon={<ArrowBack />}
+        onClick={() => navigate(
+          vieneDeRegistro
+            ? CONFIGURACION_APLICACION.rutas.registroVictimas
+            : CONFIGURACION_APLICACION.rutas.consultaRegistros
+        )}
+        sx={{ mb: 1 }}
+      >
         {vieneDeRegistro ? 'Volver al registro de víctimas' : 'Volver al histórico'}
       </Button>
-
-      <Typography sx={{ fontSize: 25, fontWeight: 800, mb: 1 }}>
-        Detalle del registro de víctima
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>
-        Se muestran los campos almacenados para esta aparición de la víctima.
-      </Typography>
 
       {cargando && (
         <Box sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
@@ -147,162 +151,146 @@ export function DetalleRegistroPage() {
       )}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-    {detalle && (
-      <>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-          <Chip label={`Periodo: ${detalle.mes}/${detalle.anio}`} />
-          <Chip label={`ID interno: ${detalle.id_registro}`} />
-          <Chip
-            label={detalle.origen === 'API_SSPC' ? 'Origen: SESNSP' : 'Origen: JSON local'}
-            variant="outlined"
-            color={detalle.origen === 'API_SSPC' ? 'success' : 'default'}
-          />
-        </Box>
-
-        {SECCIONES.map(seccion => (
-          <Accordion
-            key={seccion.titulo}
-            defaultExpanded={false}
-            variant="outlined"
-            disableGutters
+      {detalle && (
+        <>
+          <Box
             sx={{
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              borderLeft: 4,
+              borderLeftColor: TABLAS.colores.encabezado,
+              borderRadius: 2,
+              p: 2,
               mb: 2,
-              borderRadius: '12px !important',
-              overflow: 'hidden',
-              '&:before': { display: 'none' },
+              display: 'flex',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              justifyContent: 'space-between',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 2,
             }}
           >
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                IDENTIFICACIÓN DE LA VÍCTIMA
+              </Typography>
+              <Typography sx={{ fontSize: 16, fontWeight: 800, overflowWrap: 'anywhere' }}>
+                {[
+                  detalle.campos.Nombre,
+                  detalle.campos.PrimerApellido,
+                  detalle.campos.SegundoApellido,
+                ].filter(Boolean).join(' ') || 'Sin nombre registrado'}
+              </Typography>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 1 }}>
+                <Chip size="small" label={`CURP: ${textoCampo(detalle.campos.CURP)}`} />
+                <Chip size="small" label={`Registro: ${detalle.id_registro}`} />
+                <Chip size="small" label={`Periodo: ${detalle.mes}/${detalle.anio}`} />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  color={detalle.origen === 'API_SSPC' ? 'success' : 'default'}
+                  label={detalle.origen === 'API_SSPC' ? 'SESNSP' : 'JSON local'}
+                />
+              </Stack>
+            </Box>
+
+            <Button
+              variant="contained"
+              startIcon={<OpenInNew />}
+              onClick={() =>
+                navigate(
+                  `${CONFIGURACION_APLICACION.rutas.registroVictimas}/${detalle.id_registro}`
+                )
+              }
               sx={{
-                backgroundColor: TABLAS.colores.encabezado,
-                px: 3,
-                minHeight: 62,
-                '& .MuiAccordionSummary-content': {
-                  my: 1.5,
+                bgcolor: TABLAS.colores.encabezado,
+                textTransform: 'none',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                '&:hover': {
+                  bgcolor: TABLAS.colores.encabezado,
+                  filter: 'brightness(0.9)',
                 },
               }}
             >
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={1.25}
-              >
-                <Typography
-                  fontWeight={800}
-                  sx={{ color: '#fff' }}
-                >
-                  {seccion.titulo}
-                </Typography>
-              </Stack>
-            </AccordionSummary>
+              NNAS relacionados a la víctima
+            </Button>
+          </Box>
 
-            <AccordionDetails sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: 'repeat(2, minmax(0, 1fr))',
-                    lg: 'repeat(3, minmax(0, 1fr))',
-                  },
-                  gap: 2,
-                }}
-              >
-                {seccion.campos.map(campo => (
-                  <Box key={campo} sx={{ minWidth: 0, py: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      {tituloCampo(campo)}
-                    </Typography>
-
-                    <Typography
-                      fontWeight={600}
-                      sx={{
-                        whiteSpace: 'pre-wrap',
-                        overflowWrap: 'anywhere',
-                      }}
-                    >
-                      {textoCampo(detalle.campos[campo])}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-
-        {Object.keys(detalle.campos).some(
-          campo =>
-            !SECCIONES.some(seccion =>
-              (seccion.campos as readonly string[]).includes(campo)
-            )
-        ) && (
-          <Accordion
-            defaultExpanded={false}
-            variant="outlined"
-            disableGutters
-            sx={{
-              mb: 3,
-              borderRadius: '12px !important',
-              overflow: 'hidden',
-              '&:before': { display: 'none' },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
+          {SECCIONES.map((seccion) => (
+            <Accordion
+              key={seccion.titulo}
+              //defaultExpanded={indice === 0}
+              variant="outlined"
+              disableGutters
               sx={{
-                backgroundColor: TABLAS.colores.encabezado,
-                px: 3,
-                minHeight: 62,
+                mb: 1.5,
+                borderRadius: '10px !important',
+                overflow: 'hidden',
+                '&:before': { display: 'grid' },
               }}
             >
-              <Typography fontWeight={800} sx={{ color: '#fff' }}>
-                Otros campos del archivo
-              </Typography>
-            </AccordionSummary>
-
-            <AccordionDetails sx={{ p: 3 }}>
-              <Box
+              <AccordionSummary
+                expandIcon={<ExpandMore sx={{ color: '#fff' }} />}
                 sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: 'repeat(2, minmax(0, 1fr))',
-                    lg: 'repeat(3, minmax(0, 1fr))',
-                  },
-                  gap: 2,
+                  bgcolor: TABLAS.colores.encabezado,
+                  px: 2,
+                  minHeight: 48,
+                  '&.Mui-expanded': { minHeight: 48 },
+                  '& .MuiAccordionSummary-content': { my: 1 },
+                  '& .MuiAccordionSummary-content.Mui-expanded': { my: 1 },
                 }}
               >
-                {Object.entries(detalle.campos)
-                  .filter(
-                    ([campo]) =>
-                      !SECCIONES.some(seccion =>
-                        (seccion.campos as readonly string[]).includes(campo)
-                      )
-                  )
-                  .map(([campo, valor]) => (
-                    <Box key={campo} sx={{ minWidth: 0 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        {tituloCampo(campo)}
-                      </Typography>
+                <Typography fontSize={14} fontWeight={800} color="#fff">
+                  {seccion.titulo}
+                </Typography>
+              </AccordionSummary>
 
-                      <Typography
-                        fontWeight={600}
-                        sx={{
-                          overflowWrap: 'anywhere',
-                          whiteSpace: 'pre-wrap',
-                        }}
-                      >
-                        {textoCampo(valor)}
-                      </Typography>
-                    </Box>
-                  ))}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        )}
-      </>
-    )}
+              <AccordionDetails sx={{ px: 2, py: 1.75 }}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: 'repeat(2, minmax(0, 1fr))',
+                      lg: 'repeat(4, minmax(0, 1fr))',
+                    },
+                    columnGap: 2,
+                    rowGap: 1.75,
+                  }}
+                >
+                  {seccion.campos.map(campo => {
+                    const valor = detalle.campos[campo];
+                    const sinDato = valor === null || valor === undefined || String(valor).trim() === '';
+                    return (
+                      <Box key={campo} sx={{ minWidth: 0 }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.25 }}
+                        >
+                          {tituloCampo(campo)}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{
+                            whiteSpace: 'pre-wrap',
+                            overflowWrap: 'anywhere',
+                            color: sinDato ? 'text.disabled' : 'text.primary',
+                          }}
+                        >
+                          {textoCampo(valor)}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </>
+      )}
     </Box>
   );
 }

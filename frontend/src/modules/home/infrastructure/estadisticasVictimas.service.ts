@@ -5,6 +5,8 @@ export interface EstadisticasVictimas {
   victimas_menores_18: number;
   registros_curp_invalida: number;
   fecha_consulta: string;
+  periodo_inicio?: string | null;
+  periodo_fin?: string | null;
 }
 
 const API_URL = CONFIGURACION_APLICACION.api.url.replace(/\/+$/, '');
