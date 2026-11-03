@@ -29,11 +29,8 @@ import {
   type RegistroHistorico,
 } from '../../consultarRegistro/infrastructure/registroVictimas.historico.service';
 import { usarPermisos } from '../../auth/application/PermisosContext';
+import { MESES } from '../../catalogos/domain/meses';
 
-const MESES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
 
 const ANIOS = Array.from(
   { length: Math.max(1, new Date().getFullYear() - 2025) },
@@ -168,10 +165,13 @@ export function RegistroVictimasPage() {
               setMes(evento.target.value === '' ? '' : Number(evento.target.value));
               setPagina(0);
             }} sx={{ minWidth: 160 }}>
-            <MenuItem value="">Todos los meses</MenuItem>
-            {MESES.map((nombre, indice) => (
-              <MenuItem key={nombre} value={indice + 1}>{nombre}</MenuItem>
-            ))}
+          <MenuItem value="">Todos los meses</MenuItem>
+
+          {MESES.map((mes) => (
+            <MenuItem key={mes.numero} value={mes.numero}>
+              {mes.nombre}
+            </MenuItem>
+          ))} 
           </TextField>
 
           <TextField select size="small" label="Año" value={anio}

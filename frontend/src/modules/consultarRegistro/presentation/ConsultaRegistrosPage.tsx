@@ -30,26 +30,13 @@ import {
 } from '../infrastructure/registroVictimas.historico.service';
 import { ControlSincronizacionVictimas } from './ControlSincronizacionVictimas';
 import { usarPermisos } from '../../auth/application/PermisosContext';
-
-const MESES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
+import { useEntidades } from '../../catalogos/application/useEntidades';
+import { MESES } from '../../catalogos/domain/meses';
 
 const ANIOS = Array.from(
   { length: new Date().getFullYear() - 2025 },
   (_, indice) => new Date().getFullYear() - indice,
 );
-
-const ENTIDADES = [
-  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche',
-  'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima',
-  'Durango', 'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco',
-  'México', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León',
-  'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí',
-  'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala',
-  'Veracruz', 'Yucatán', 'Zacatecas',
-];
 
 const FILTROS_INICIALES = {
   curp: '',
@@ -73,11 +60,14 @@ function etiquetaOrigen(registro: RegistroHistorico): string {
 }
 
 export function ConsultaRegistrosPage() {
+
   const navigate = useNavigate();
   const { tienePermiso } = usarPermisos();
 
   const puedeSincronizar = tienePermiso('registros.sincronizar');
   const puedeVerDetalle = tienePermiso('registros.detalle.consultar');
+
+  const {entidades, cargandoEntidades, errorEntidades} = useEntidades();
 
   const [mes, setMes] = useState<number | ''>('');
   const [anio, setAnio] = useState<number | ''>('');
@@ -230,10 +220,10 @@ export function ConsultaRegistrosPage() {
             sx={{ minWidth: 175 }}
           >
             <MenuItem value="">Todos los meses</MenuItem>
-            {MESES.map((nombre, indice) => (
-              <MenuItem key={nombre} value={indice + 1}>
-                {nombre}
-              </MenuItem>
+              {MESES.map((mes) => (
+                <MenuItem key={mes.numero} value={mes.numero}>
+                  {mes.nombre}
+                </MenuItem>
             ))}
           </TextField>
 
@@ -419,13 +409,18 @@ export function ConsultaRegistrosPage() {
                   onChange={evento =>
                     cambiarFiltro('entidad', evento.target.value)
                   }
+                  disabled={cargandoEntidades || Boolean(errorEntidades)}
                   sx={ESTILOS_TABLA.filtro}
                   SelectProps={{ displayEmpty: true }}
                 >
                   <MenuItem value="">Todas</MenuItem>
-                  {ENTIDADES.map(entidad => (
-                    <MenuItem key={entidad} value={entidad}>
-                      {entidad}
+
+                  {entidades.map(entidad => (
+                    <MenuItem
+                      key={entidad.clave}
+                      value={entidad.nombre}
+                    >
+                      {entidad.nombre}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -482,7 +477,7 @@ export function ConsultaRegistrosPage() {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {MESES[registro.mes - 1] ?? registro.mes}
+                  {MESES.find(mes => mes.numero === registro.mes)?.nombre ?? registro.mes}
                 </TableCell>
 
                 <TableCell
