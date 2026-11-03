@@ -28,6 +28,9 @@ from app.modules.usuarios.routes.SesionUsuarioRoutes import (
 from app.modules.usuarios.routes.GestionAccesosRoutes import (
     router as router_gestion_accesos,
 )
+from app.modules.catalogos.routes.CatalogosRoutes import (
+    router as router_catalogos,
+)
 
 
 
@@ -54,6 +57,7 @@ aplicacion.include_router(router_descarga_registros)
 aplicacion.include_router(router_gestion_victimas, prefix="/api/registro-victimas")
 aplicacion.include_router(router_estadisticas_victimas)
 aplicacion.include_router(router_gestion_accesos)
+aplicacion.include_router(router_catalogos)
 
 
 origenes_permitidos = [
