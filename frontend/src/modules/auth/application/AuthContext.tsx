@@ -60,23 +60,35 @@ export function ProveedorAutenticacion({ children }: { children: ReactNode }) {
     iniciarSesionLlaveMx();
   };
 
-  const cerrarSesion = async () => {
-    if (MODO_DESARROLLO) {
-      // El usuario simulado permanece activo mientras esté habilitado el modo demo.
-      sessionStorage.removeItem('validacion_activa_vista');
-      return;
-    }
-    try {
-      establecerError(null);
-      await cerrarSesionLlaveMx();
-      establecerUsuario(null);
-      sessionStorage.removeItem('validacion_activa_vista');
-    } catch {
-      const mensajeError = 'No fue posible cerrar la sesión.';
-      establecerError(mensajeError);
-      throw new Error(mensajeError);
-    }
-  };
+const cerrarSesion = async () => {
+  if (MODO_DESARROLLO) {
+    sessionStorage.removeItem('validacion_activa_vista');
+
+    window.location.replace('/VictimasIndirectas/#/login');
+    return;
+  }
+
+  try {
+    establecerError(null);
+
+    // Cerrar sesión en el backend
+    await cerrarSesionLlaveMx();
+
+    // Limpiar usuario de React
+    establecerUsuario(null);
+
+    // Limpiar estado temporal
+    sessionStorage.removeItem('validacion_activa_vista');
+
+    // Regresar al login
+    window.location.replace('/VictimasIndirectas/#/login');
+
+  } catch {
+    const mensajeError = 'No fue posible cerrar la sesión.';
+    establecerError(mensajeError);
+    throw new Error(mensajeError);
+  }
+};
 
   return (
     <ContextoAutenticacion.Provider value={{

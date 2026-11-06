@@ -1,0 +1,47 @@
+/* Login institucional aislado, basado en la maqueta oficial Llave MX. */
+.lmx-wrapper, .lmx-wrapper *, .lmx-wrapper *::before, .lmx-wrapper *::after { box-sizing: border-box; }
+.lmx-wrapper { font-family: "Noto Sans", Arial, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+.lmx-page { display: flex; flex: 1; }
+
+.lmx-left {
+  flex: 1 1 50%; min-width: 0; min-height: 100vh;
+  background-color: #781839; background-size: cover; background-position: center; background-blend-mode: multiply;
+  display: flex; align-items: center; justify-content: center; padding: 80px 60px;
+}
+.lmx-left__content { display: flex; flex-direction: column; align-items: flex-start; gap: 40px; max-width: 380px; width: 100%; }
+.lmx-left__title { margin: 0; color: #fff; font-size: 36px; font-weight: 700; line-height: 1.2; font-family: inherit; }
+.lmx-inst-card { background: #fff; border-radius: 8px; padding: 20px 28px; display: flex; align-items: center; justify-content: center; min-width: 220px; min-height: 110px; }
+.lmx-inst-card img { display: block; max-height: 70px; max-width: 240px; width: auto; height: auto; object-fit: contain; }
+
+.lmx-right {
+  flex: 1 1 50%; min-width: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background-color: #f9f9f9; background-size: cover; background-position: center; padding: 60px 40px;
+}
+.lmx-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,.12); padding: 24px; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; }
+.lmx-card__logo { display: block; width: auto; max-width: 100%; height: 56px; margin-bottom: 32px; object-fit: contain; }
+.lmx-card__terminos { margin: 0 0 40px; font-size: 13px; color: #434343; line-height: 1.6; width: 100%; text-align: left; }
+.lmx-btns { display: flex; gap: 24px; width: 100%; }
+.lmx-btn-outline, .lmx-btn-solid {
+  flex: 1; min-width: 0; min-height: 42px; border-radius: 6px; padding: 10px; font-size: 15px; font-weight: 500;
+  font-family: inherit; cursor: pointer; text-align: center; text-decoration: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.lmx-btn-outline { background: #fff; color: #611232; border: 1.5px solid #611232; }
+.lmx-btn-solid { background: #611232; color: #fff; border: 1px solid #611232; }
+.lmx-btn-solid:hover { background: #4d0e28; }
+.lmx-btn-outline:disabled { opacity: .6; cursor: not-allowed; }
+.lmx-btn-solid:focus-visible, .lmx-btn-outline:focus-visible { outline: 3px solid #a57f2c; outline-offset: 3px; }
+.lmx-error { width: 100%; margin: 0 0 16px; padding: 12px; border-left: 4px solid #b3261e; background: #fff5f5; color: #b3261e; font-size: 13px; }
+
+@media (max-width: 960px) {
+  .lmx-page { flex-direction: column; }
+  .lmx-left { min-height: auto; padding: 40px 24px 48px; justify-content: flex-start; align-items: flex-start; }
+  .lmx-left__content { gap: 28px; max-width: 100%; }
+  .lmx-left__title { font-size: 28px; }
+  .lmx-inst-card { min-width: 0; width: 100%; max-width: 280px; }
+  .lmx-right { min-height: auto; padding: 48px 24px 64px; }
+  .lmx-card { max-width: 380px; }
+  .lmx-btns { flex-direction: column; gap: 16px; }
+  .lmx-btn-outline, .lmx-btn-solid { width: 100%; }
+}
+@media (max-width: 400px) { .lmx-left__title { font-size: 24px; } }

@@ -4,12 +4,12 @@ import httpx
 from pydantic import ValidationError
 from app.core.configuracion import configuracion
 from app.modules.usuarios.dto.DatosUsuarioLlaveMxDTO import (DatosUsuarioLlaveMXDTO)
-
+from datetime import UTC, datetime
 
 class ProveedorLlaveMX:
 
     def generar_state(self) -> str:
-        return secrets.token_urlsafe(48)
+        return secrets.token_urlsafe(64)
 
     def construir_url_autenticacion(self, state: str) -> str:
         parametros = {
@@ -23,7 +23,11 @@ class ProveedorLlaveMX:
             f"?{urlencode(parametros)}"
         )
 
-    async def obtener_token(self, code: str) -> str:
+    async def obtener_token(
+        self,
+        code: str,
+    ) -> tuple[str, datetime]:
+
         cuerpo = {
             "grantType": "authorization_code",
             "code": code,
@@ -44,7 +48,10 @@ class ProveedorLlaveMX:
             pool=10.0,
         )
 
-        async with httpx.AsyncClient(timeout=timeout) as cliente:
+        async with httpx.AsyncClient(
+            timeout=timeout,
+        ) as cliente:
+
             respuesta = await cliente.post(
                 url_token,
                 json=cuerpo,
@@ -58,16 +65,47 @@ class ProveedorLlaveMX:
             )
 
             respuesta.raise_for_status()
-            datos = respuesta.json()
-            access_token = datos.get("accessToken")
 
-            if not access_token:
+            datos = respuesta.json()
+
+            if not isinstance(datos, dict):
                 raise ValueError(
-                    "Llave MX no devolvió accessToken."
+                    "Llave MX devolvió una respuesta inválida."
                 )
 
-            return access_token
+            access_token = datos.get("accessToken")
+            expires_in = datos.get("expiresIn")
 
+            if not isinstance(access_token, str) or not access_token:
+                raise ValueError(
+                    "Llave MX no devolvió un accessToken válido."
+                )
+
+            if (
+                isinstance(expires_in, bool)
+                or not isinstance(expires_in, (int, float))
+            ):
+                raise ValueError(
+                    "Llave MX no devolvió una expiración válida."
+                )
+
+            try:
+                fecha_expiracion = datetime.fromtimestamp(
+                    expires_in / 1000,
+                    tz=UTC,
+                )
+            except (ValueError, OverflowError, OSError) as error:
+                raise ValueError(
+                    "La fecha de expiración de Llave MX es inválida."
+                ) from error
+
+            if fecha_expiracion <= datetime.now(UTC):
+                raise ValueError(
+                    "Llave MX devolvió un token expirado."
+                )
+
+            return access_token, fecha_expiracion
+    
     async def obtener_datos_usuario(self, access_token: str) -> DatosUsuarioLlaveMXDTO:
         url_datos_usuario = (
             f"{configuracion.llave_api_url.rstrip('/')}"
@@ -122,3 +160,52 @@ class ProveedorLlaveMX:
                     "no cumplen el formato esperado: "
                     f"{error.errors(include_input=False)}"
                 ) from error
+                
+    async def cerrar_sesion(
+        self,
+        access_token: str,
+    ) -> bool:
+
+        url_cierre = (
+            f"{configuracion.llave_api_url.rstrip('/')}"
+            "/oauth/cerrarSesion"
+        )
+
+        timeout = httpx.Timeout(
+            connect=10.0,
+            read=15.0,
+            write=10.0,
+            pool=10.0,
+        )
+
+        async with httpx.AsyncClient(
+            timeout=timeout,
+        ) as cliente:
+
+            respuesta = await cliente.post(
+                url_cierre,
+                json={},
+                headers={
+                    "Content-Type": "application/json",
+                    "accessToken": access_token,
+                },
+                auth=(
+                    configuracion.llave_basic_user,
+                    configuracion.llave_basic_password,
+                ),
+            )
+
+            respuesta.raise_for_status()
+            try:
+                datos = respuesta.json()
+            except ValueError as error:
+                raise ValueError(
+                    "Llave MX devolvió una respuesta de cierre inválida."
+                ) from error
+
+            if not isinstance(datos, dict):
+                raise ValueError(
+                    "La respuesta de cierre de Llave MX no es un objeto."
+                )
+
+            return datos.get("codeResponse") == 101

@@ -1,10 +1,11 @@
 from functools import lru_cache
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Configuracion(BaseSettings):
-    cookies_seguras: bool = False
+    cookies_seguras: bool = True
     nombre_aplicacion: str = ""
     entorno: str = ""
     
@@ -22,7 +23,7 @@ class Configuracion(BaseSettings):
     llave_datos_usuario_url: str = ""
 
     secreto_sesion: str = ""
-
+    llave_mx_clave_cifrado: SecretStr | None = None
     # Configuración de la API SESNSP
     sspc_api_url: str = "https://cni03.sspc.gob.mx/apiFeminicidios"
     sspc_origen: str = ""

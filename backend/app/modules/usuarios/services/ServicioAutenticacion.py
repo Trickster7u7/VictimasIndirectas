@@ -108,17 +108,15 @@ class ServicioAutenticacion:
                 detail=(
                     "El estado de autenticación "
                     "no es válido."
-                ),
+                    ),
             )
 
         proveedor = ProveedorLlaveMX()
 
         try:
 
-            access_token = (
-                await proveedor.obtener_token(
-                    code=code
-                )
+            access_token, expiracion_llave_mx = (
+                await proveedor.obtener_token(code=code)
             )
 
             datos_usuario = (
@@ -167,7 +165,9 @@ class ServicioAutenticacion:
 
         token_sesion, _ = await (
             ServicioSesionUsuario.crear_sesion(
-                usuario=usuario
+                usuario=usuario,
+                access_token_llave_mx=access_token,
+                expiracion_llave_mx=expiracion_llave_mx,
             )
         )
 

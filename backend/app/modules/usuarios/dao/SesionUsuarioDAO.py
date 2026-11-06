@@ -10,12 +10,16 @@ class SesionUsuarioDAO:
         usuario: Usuario,
         hash_token: str,
         fecha_expiracion: datetime,
+        token_llave_mx_cifrado: str | None = None,
+        token_llave_mx_expiracion: datetime | None = None,
     ) -> SesionUsuario:
 
         return await SesionUsuario.create(
             usuario=usuario,
             hash_token=hash_token,
             fecha_expiracion=fecha_expiracion,
+            token_llave_mx_cifrado=token_llave_mx_cifrado,
+            token_llave_mx_expiracion=token_llave_mx_expiracion,
         )
 
     @staticmethod

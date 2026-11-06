@@ -1,11 +1,10 @@
 import { Navigate } from 'react-router-dom';
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-import { Alert, Box, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 import { usarAutenticacion } from '../application/usarAutenticacion';
 import { obtenerRutaUsuario } from '../application/obtenerRutaUsuario';
 import { RECURSOS } from '../../../config/recursos';
 import { CONFIGURACION_APLICACION } from '../../../config/aplicacion.config';
 import { PantallaCarga } from '../../../components/comunes/PantallaCarga';
+import '../../../styles/llavemx.css';
 
 /** El acceso no utiliza el layout privado ni inventa un flujo OAuth en el frontend. */
 export function PaginaInicioSesion() {
@@ -14,25 +13,30 @@ export function PaginaInicioSesion() {
   if (autenticado && usuario) return <Navigate to={obtenerRutaUsuario(usuario.estado)} replace />;
 
   return (
-    <Box component="main" sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(300px, 1fr) minmax(400px, 1fr)' } }}>
-      <Stack sx={{ bgcolor: 'primary.main', color: 'white', minHeight: { xs: 230, md: '100vh' }, p: { xs: 3, md: 7 }, justifyContent: 'center', alignItems: 'flex-start', backgroundImage: `linear-gradient(115deg, #611232D9, #450C27EC), url(${RECURSOS.fondos.sndif.decorativo})`, backgroundSize: 'cover', backgroundPosition: 'center' }} spacing={3}>
-        <Box component="img" alt="Gobierno de México" src={RECURSOS.logos.gobierno} sx={{ width: { xs: 185, md: 240 }, maxHeight: 76, objectFit: 'contain', objectPosition: 'left center' }} />
-        <Box><Typography variant="overline" sx={{ opacity: 0.86 }}>Sistema Nacional DIF</Typography><Typography variant="h4" sx={{ fontSize: { xs: '1.6rem', md: '2.5rem' }, lineHeight: 1.17, fontWeight: 750, maxWidth: 430 }}>{CONFIGURACION_APLICACION.nombre}</Typography><Typography sx={{ mt: 2, opacity: 0.9, maxWidth: 400 }}>{CONFIGURACION_APLICACION.descripcion}</Typography></Box>
-        <Box component="img" alt="Sistema Nacional DIF" src={RECURSOS.logos.sndif.blanco} sx={{ width: 250, maxWidth: '100%', objectFit: 'contain', objectPosition: 'left center' }} />
-      </Stack>
-      <Box sx={{ display: 'grid', placeItems: 'center', px: { xs: 2.5, md: 5 }, py: 5, bgcolor: 'background.default' }}>
-        <Card sx={{ width: '100%', maxWidth: 450 }}>
-          <CardContent sx={{ p: { xs: 3, sm: 5 }, '&:last-child': { pb: { xs: 3, sm: 5 } } }}>
-            <Stack spacing={3} alignItems="center" textAlign="center">
-              <Box component="img" alt="Llave MX" src={RECURSOS.logos.llaveMx.principal} sx={{ width: 190, height: 71, objectFit: 'contain' }} />
-              <Box><Typography variant="h5" component="h1">Iniciar sesión</Typography><Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>Ingresa utilizando tu cuenta Llave MX para continuar con el proceso de validación.</Typography></Box>
-              {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
-              <Button startIcon={<LoginOutlinedIcon />} fullWidth variant="contained" size="large" onClick={iniciarSesion}>Ingresar con Llave MX</Button>
-              <Typography variant="caption" color="text.secondary">La autenticación se realiza a través del servicio oficial de Llave MX.</Typography>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
+    <main className="lmx-wrapper">
+      <div className="lmx-page">
+        <section className="lmx-left" aria-label="Información institucional" style={{ backgroundImage: `url(${RECURSOS.fondos.llaveMx})` }}>
+          <div className="lmx-left__content">
+            <h1 className="lmx-left__title">{CONFIGURACION_APLICACION.nombre}</h1>
+            <div className="lmx-inst-card">
+              <img src={RECURSOS.logos.sndif.color} alt="Sistema Nacional DIF" />
+            </div>
+          </div>
+        </section>
+        <section className="lmx-right" aria-label="Acceso con Llave MX" style={{ backgroundImage: `url(${RECURSOS.fondos.llaveMx})` }}>
+          <div className="lmx-card">
+            <img className="lmx-card__logo" src={RECURSOS.logos.llaveMx.principal} alt="Llave MX" />
+            <p className="lmx-card__terminos">
+              Para ingresar, utiliza tu cuenta de Llave MX. Consulta los Términos y Condiciones y el Aviso de Privacidad del servicio oficial.
+            </p>
+            {error && <p className="lmx-error" role="alert">{error}</p>}
+            <div className="lmx-btns">
+              <button type="button" className="lmx-btn-outline" disabled title="Pendiente de configurar la ruta oficial de registro">Crear cuenta</button>
+              <button type="button" className="lmx-btn-solid" onClick={iniciarSesion}>Iniciar sesión</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
